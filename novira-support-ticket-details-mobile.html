@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Novira — Support Ticket Details (Mobile)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#F4F1E8; --ink-2:#A8A89E; --ink-3:#767872; --ink-4:#5F625E;
+    --canvas:#0D0F0E; --surface:#14171A; --surface-2:#191D21;
+    --hairline:rgba(244,241,232,.10); --hairline-soft:rgba(244,241,232,.06);
+    --accent:#4FAE84; --accent-2:#6FC69E; --mint:#7FD9BD;
+    --rail:#121317; --rail-2:#181A20; --rail-line:rgba(255,255,255,.08); --rail-txt:#9AA1AB; --rail-txt-hi:#E9ECE9; --rail-muted:rgba(255,255,255,.38);
+    --pos:#4FAE84; --live:#39B3A6; --neutral:#8A8E86; --warn:#D98A4A; --neg:#D96A5F;
+    --pos-t:rgba(79,174,132,.14); --live-t:rgba(57,179,166,.14); --neutral-t:rgba(138,142,134,.14); --warn-t:rgba(217,138,74,.15); --neg-t:rgba(217,106,95,.14);
+    --r-panel:15px; --r-ctrl:12px; --r-sm:8px; --r-pill:999px;
+    --sh:0 1px 2px rgba(0,0,0,.35), 0 18px 44px -28px rgba(0,0,0,.75);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  a.btn,a.rec-id,.d-help{text-decoration:none}
+  html{-webkit-font-smoothing:antialiased}
+  body{font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums;
+    background:radial-gradient(900px 500px at 50% 0%,#20242c,#15171c 70%);min-height:100vh;padding:40px 16px;display:flex;justify-content:center}
+  .num{font-feature-settings:"tnum" 1}
+
+  .device{width:402px;max-width:100%;background:#0c0d10;border-radius:48px;padding:13px;box-shadow:0 50px 100px -30px rgba(0,0,0,.6),inset 0 0 0 2px rgba(255,255,255,.05)}
+  .screen{position:relative;height:850px;border-radius:36px;overflow:hidden;background:var(--canvas);display:flex;flex-direction:column}
+
+  .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;background:var(--surface);flex:none}
+  .statusbar .r{display:flex;align-items:center;gap:6px}.statusbar svg{width:16px;height:16px}
+
+  .m-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px 14px;background:var(--surface);border-bottom:1px solid transparent;transition:box-shadow .2s,border-color .2s;flex:none}
+  .m-head.scrolled{border-bottom-color:var(--hairline);box-shadow:0 10px 24px -18px rgba(21,23,28,.25)}
+  .h-left{display:flex;align-items:center;gap:11px;min-width:0}
+  .h-mark{width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;color:var(--accent);background:var(--pos-t)}.h-mark svg{width:19px;height:19px}
+  .h-ey{font-size:8.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);line-height:1}
+  .h-id{font-size:17px;font-weight:700;letter-spacing:-.02em;margin-top:4px;line-height:1}
+  .x{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--ink-3);background:var(--surface-2);border:1px solid var(--hairline);cursor:pointer;flex:none}.x svg{width:17px;height:17px}
+
+  .scroll{flex:1;overflow-y:auto;overflow-x:hidden}
+  .scroll::-webkit-scrollbar{width:0}
+  .content{padding:14px 14px 24px;display:flex;flex-direction:column;gap:13px}
+  .card{background:var(--surface);border-radius:var(--r-panel);box-shadow:var(--sh);padding:16px}
+  .c-title{font-size:14.5px;font-weight:700;letter-spacing:-.015em;margin-bottom:14px}
+  .kv-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+  .kv-val{font-size:13px;color:var(--ink);margin-top:6px;font-weight:500;word-break:break-word}
+  .kv-val.strong{font-weight:600}
+  .kv-val.body{font-weight:400;color:var(--ink-2);line-height:1.6}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+  .stack{display:flex;flex-direction:column;gap:15px}
+
+  /* vertical progress */
+  .vstepper{display:flex;flex-direction:column}
+  .vstage{display:flex;gap:13px}
+  .vcol{display:flex;flex-direction:column;align-items:center;flex:none}
+  .vdot{width:28px;height:28px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:#fff;box-shadow:0 0 0 1.5px var(--accent),0 5px 12px -5px rgba(15,110,86,.6)}
+  .vdot svg{width:14px;height:14px}
+  .vline{width:3px;flex:1;min-height:22px;background:linear-gradient(180deg,var(--accent),var(--accent-2));margin:3px 0;border-radius:99px}
+  .vbody{padding-bottom:18px;flex:1}
+  .vstage:last-child .vbody{padding-bottom:0}
+  .v-lbl{font-size:13.5px;font-weight:600;color:var(--ink)}
+  .v-time{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill)}
+  .pill .d{width:6px;height:6px;border-radius:50%}
+  .pill.neutral{color:var(--neutral);background:var(--neutral-t)}.pill.neutral .d{background:var(--neutral)}
+
+  .card.resolve{border-left:3px solid var(--accent);padding-left:13px}
+  .card.resolve .c-title{color:var(--accent)}
+
+  .attach{display:flex;align-items:center;gap:11px;border:1px solid var(--hairline);border-radius:12px;padding:11px 13px;background:var(--surface-2)}
+  .attach .fic{width:36px;height:36px;border-radius:10px;flex:none;display:grid;place-items:center;background:var(--pos-t);color:var(--accent)}.attach .fic svg{width:17px;height:17px}
+  .attach .fname{font-size:13px;font-weight:600;color:var(--accent)}
+  .attach .fmeta{font-size:11px;color:var(--ink-3);margin-top:2px}
+  .attach .dl{margin-left:auto;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:var(--ink-3)}.attach .dl svg{width:16px;height:16px}
+
+  .m-foot{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface);border-top:1px solid var(--hairline);flex:none}
+  .btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r-ctrl);font-weight:600;font-size:13px;cursor:pointer;border:1px solid transparent;font-family:inherit;padding:11px}.btn svg{width:15px;height:15px}
+  .btn-out{background:var(--surface);color:var(--ink);border-color:var(--hairline)}
+  .btn-secondary{background:#3f444c;color:#fff}
+
+  .hint{margin-top:22px;text-align:center;color:rgba(255,255,255,.55);font-size:11.5px;line-height:1.6;max-width:402px}
+
+
+  /* Novira dark theme override — colors only, structure unchanged */
+  :root{
+    --ink:#F4F1E8; --ink-2:#A8A89E; --ink-3:#767872; --ink-4:#5F625E;
+    --canvas:#0D0F0E; --surface:#14171A; --surface-2:#191D21;
+    --hairline:rgba(244,241,232,.10); --hairline-soft:rgba(244,241,232,.06);
+    --accent:#4FAE84; --accent-2:#6FC69E; --mint:#7FD9BD;
+    --rail:#121317; --rail-2:#181A20; --rail-line:rgba(255,255,255,.08); --rail-txt:#9AA1AB; --rail-txt-hi:#E9ECE9; --rail-muted:rgba(255,255,255,.38);
+    --pos:#4FAE84; --live:#39B3A6; --neutral:#8A8E86; --warn:#D98A4A; --neg:#D96A5F;
+    --pos-t:rgba(79,174,132,.14); --live-t:rgba(57,179,166,.14); --neutral-t:rgba(138,142,134,.14); --warn-t:rgba(217,138,74,.15); --neg-t:rgba(217,106,95,.14);
+    --sh:0 1px 2px rgba(0,0,0,.35), 0 18px 44px -28px rgba(0,0,0,.75);
+  }
+  .screen{background:var(--canvas)!important;color:var(--ink)!important}
+  .scroll{background:var(--canvas)!important}
+  .statusbar{background:var(--canvas)!important;color:var(--ink)!important}
+  .appbar{background:rgba(20,23,26,.88)!important;border-bottom-color:var(--hairline)!important;color:var(--ink)!important}
+  .m-head{background:var(--surface)!important;border-bottom-color:var(--hairline-soft)!important;color:var(--ink)!important}
+  .panel,.card,.wcard,.band,.subnav,.rec.plain,.tcard,.vcard,.ncard,.pcard{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--hairline)!important}
+  .content,.zone,.zone-head,.c-title,.zone-title,.group-title,.sec-title,.hero h1,.hero,.support h3,.wtitle,.rec-id,.rec-ship,.ent,.ent .val,.ttl,.d-title,.h-id,.appbar .title{color:var(--ink)!important}
+  .hero p,.support p,.kv,.kv b,.kv-val.body,.rec-title,.rec-meta,.total-list,.caption,.desc,.arec-msg,.feed-row .desc,.alert-row .desc,.sc-sub,.bh-meta,.f-out,.v-d,.p-d,.n-d,.bare,.stage .lbl,.stage .ts{color:var(--ink-2)!important}
+  .h-ey,.kv-label,.when,.card-top .when,.card-top .sno,.rec-no,.fmeta,.d-sub,.d-v,.feed-row .ts,.alert-row .ts,.arec-when,.tfoot .meta{color:var(--ink-3)!important}
+  .select,.sel,.search input,.wsearch input,.datefield .inp,.field .inp,.input,.textarea,.attach,.ent,.schip,.chip,.wchip,.btn-out,.toolbtn,.plus,.iconbtn,.x,.nbtn,.rsel{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--hairline)!important}
+  .select svg,.sel svg,.search svg,.wsearch svg,.datefield svg,.field svg,.toolbtn svg,.plus svg,.iconbtn svg,.x svg,.nbtn svg,.ibtn svg{color:var(--ink-3)!important}
+  .search input::placeholder,.wsearch input::placeholder,.input::placeholder,.textarea::placeholder{color:var(--ink-4)!important}
+  .plan-pill{background:rgba(244,241,232,.08)!important;color:var(--ink)!important;border:1px solid var(--hairline)!important}
+  .plan-pill .pp-lbl{color:var(--ink-3)!important}.plan-pill svg{color:var(--ink-3)!important}
+  .av{border-color:var(--surface)!important}
+  .stats .stat:not(:last-child)::after,.rec+.rec,.card+.card,.feed-row+.feed-row,.alert-row+.alert-row,.tlcard+.tlcard,.pager,.tfoot,.maphead,.group-title{border-color:var(--hairline-soft)!important}
+  .stat:not(:last-child)::after{background:var(--hairline)!important}
+  .stat .s-val{color:#69706D!important}.stat.on .s-val{color:var(--ink)!important}
+  .seg{background:#101312!important;border:1px solid var(--hairline)!important}.seg button.on{background:var(--surface-2)!important;color:var(--ink)!important}
+  .btn-secondary,.btn-fill,.btn-out.btn-dark{background:#24282E!important;color:var(--ink)!important;border-color:var(--hairline)!important}
+  .btn-primary,.create,.viewall,.pg.on,.wchip.on,.chip.on,.schip.on{background:var(--accent)!important;color:#FFFFFF!important;border-color:transparent!important}
+  .btn-ghost,.link,.rec-id,.rec-inv,.f-go,.p-go{color:var(--accent)!important}
+  .band-head{background:linear-gradient(135deg,rgba(79,174,132,.14),var(--surface-2))!important}
+  .rec.active{background:rgba(79,174,132,.12)!important;border-color:rgba(79,174,132,.35)!important;box-shadow:inset 3px 0 0 var(--accent)!important}
+  .attach .fic,.ent .ic,.h-mark,.vcard .v-ic,.tcard .t-ic,.p-render{background:var(--pos-t)!important;color:var(--accent)!important}
+  .bar{background:#101312!important;border-color:var(--hairline)!important}
+  .cbx{border-color:var(--hairline)!important}
+  .dcard{background:linear-gradient(160deg,#1D2026,#141619)!important;border-color:var(--rail-line)!important;color:#fff!important}
+  .map{background:radial-gradient(130% 100% at 28% 18%,#22262F,#181B21 55%,#121317)!important}
+  .pg{color:var(--ink-2)!important}.pg.txt{color:var(--accent)!important}.pg.arr{color:var(--ink-4)!important}
+  footer,.m-foot{background:var(--surface)!important;border-color:var(--hairline)!important;color:var(--ink-2)!important}
+
+</style>
+</head>
+<body>
+<!-- Converted to Novira dark theme: colors only; layout/content unchanged. -->
+
+<div>
+  <div class="device">
+    <div class="screen">
+
+      <div class="statusbar"><span>9:41</span><span class="r">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 14h3v6H3zM9 10h3v10H9zM15 6h3v14h-3z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8.5a14 14 0 0120 0M5 12a9 9 0 0114 0M8.5 15.5a4.5 4.5 0 017 0"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="18" height="10" rx="2.5"/><rect x="21" y="10" width="1.6" height="4" rx=".8"/></svg>
+      </span></div>
+
+      <div class="m-head" id="mhead">
+        <div class="h-left">
+          <div class="h-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <div><div class="h-ey">Support Ticket</div><div class="h-id">SPT#645530</div></div>
+        </div>
+        <button class="x" onclick="window.location.href='novira-support-tickets-mobile.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+
+      <div class="scroll" id="sc">
+        <div class="content">
+
+          <!-- PROGRESS -->
+          <div class="card">
+            <div class="c-title">Ticket Progress</div>
+            <div class="vstepper">
+              <div class="vstage"><div class="vcol"><span class="vdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span><span class="vline"></span></div><div class="vbody"><div class="v-lbl">New</div><div class="v-time">May 12 2026 at 12:29 AM</div></div></div>
+              <div class="vstage"><div class="vcol"><span class="vdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span><span class="vline"></span></div><div class="vbody"><div class="v-lbl">In Progress</div><div class="v-time">May 12 2026 at 12:32 AM</div></div></div>
+              <div class="vstage"><div class="vcol"><span class="vdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span><span class="vline"></span></div><div class="vbody"><div class="v-lbl">Resolved</div><div class="v-time">May 12 2026 at 12:34 AM</div></div></div>
+              <div class="vstage"><div class="vcol"><span class="vdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span></div><div class="vbody"><div class="v-lbl">Closed</div><div class="v-time">May 12 2026 at 12:35 AM</div></div></div>
+            </div>
+          </div>
+
+          <!-- CUSTOMER INFORMATION -->
+          <div class="card">
+            <div class="c-title">Customer Information</div>
+            <div class="stack">
+              <div><div class="kv-label">Customer Name</div><div class="kv-val strong">Jaskaran Hothi</div></div>
+              <div><div class="kv-label">Email</div><div class="kv-val">jshothi94587@gmail.com</div></div>
+              <div class="grid2">
+                <div><div class="kv-label">Phone</div><div class="kv-val">+1 (510) 456-6227</div></div>
+                <div><div class="kv-label">Preferred Contact Method</div><div class="kv-val">Email</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TICKET INFORMATION -->
+          <div class="card">
+            <div class="c-title">Ticket Information</div>
+            <div class="stack">
+              <div><div class="kv-label">Ticket ID</div><div class="kv-val strong" style="color:var(--accent)">SPT#645530</div></div>
+              <div><div class="kv-label">Title</div><div class="kv-val strong">issues regarding the device</div></div>
+              <div><div class="kv-label">Description</div><div class="kv-val body">activating the device and it is not working properly hhghghghghghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</div></div>
+              <div><div class="kv-label" style="margin-bottom:9px">Attachment</div>
+                <div class="attach">
+                  <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/><path d="M9 13h6M9 17h4"/></svg></span>
+                  <div><div class="fname">GL30MG.pdf</div><div class="fmeta">PDF document</div></div>
+                  <span class="dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+                </div>
+              </div>
+              <div class="grid2">
+                <div><div class="kv-label">Created At</div><div class="kv-val">May 12 2026 at 12:29 AM</div></div>
+                <div><div class="kv-label">Updated At</div><div class="kv-val">May 12 2026 at 12:35 AM</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TICKET STATUS -->
+          <div class="card">
+            <div class="c-title">Ticket Status</div>
+            <div class="stack">
+              <div class="grid2">
+                <div><div class="kv-label">Status</div><div class="kv-val" style="margin-top:8px"><span class="pill neutral"><span class="d"></span>Closed</span></div></div>
+                <div><div class="kv-label">Closed At</div><div class="kv-val">May 12 2026 at 12:35 AM</div></div>
+              </div>
+              <div><div class="kv-label">Status Message</div><div class="kv-val body">Your ticket has been closed.</div></div>
+            </div>
+          </div>
+
+          <!-- RESOLUTION DETAILS (hero) -->
+          <div class="card resolve">
+            <div class="c-title">Resolution Details</div>
+            <div><div class="kv-label">Resolution Notes</div><div class="kv-val body">this has been resolved customer has full control on this</div></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="m-foot">
+        <button class="btn btn-out">Close</button>
+        <button class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>Download Ticket</button>
+      </div>
+
+    </div>
+  </div>
+  <div class="hint">Full-screen sheet · progress runs vertical · grouped cards stack · Resolution Details leads · sticky footer</div>
+</div>
+
+<script>
+  var sc=document.getElementById('sc'),head=document.getElementById('mhead');
+  sc.addEventListener('scroll',function(){head.classList.toggle('scrolled',sc.scrollTop>4)});
+</script>
+</body>
+</html>

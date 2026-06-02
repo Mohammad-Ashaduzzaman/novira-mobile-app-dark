@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Novira Mobile Dark Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#F4F1E8; --ink-2:#A8A89E; --ink-3:#767872; --ink-4:#5F625E;
+    --canvas:#0D0F0E; --surface:#14171A; --surface-2:#191D21;
+    --hairline:rgba(244,241,232,.10); --hairline-soft:rgba(244,241,232,.06);
+    --accent:#4FAE84; --accent-2:#6FC69E; --mint:#7FD9BD;
+    --rail:#121317; --rail-2:#181A20; --rail-line:rgba(255,255,255,.08); --rail-txt:#9AA1AB; --rail-txt-hi:#E9ECE9; --rail-muted:rgba(255,255,255,.38);
+    --pos:#4FAE84; --live:#39B3A6; --neutral:#8A8E86; --warn:#D98A4A; --neg:#D96A5F;
+    --pos-t:rgba(79,174,132,.14); --live-t:rgba(57,179,166,.14); --neutral-t:rgba(138,142,134,.14); --warn-t:rgba(217,138,74,.15); --neg-t:rgba(217,106,95,.14);
+    --r-panel:15px; --r-ctrl:12px; --r-sm:8px; --r-pill:999px;
+    --sh:0 1px 2px rgba(0,0,0,.35), 0 18px 44px -28px rgba(0,0,0,.75);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  a.btn,a.rec-id,.d-help{text-decoration:none}
+  html{-webkit-font-smoothing:antialiased}
+  body{font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums;
+    background:radial-gradient(900px 500px at 50% 0%,#20242c,#15171c 70%);min-height:100vh;padding:40px 16px;display:flex;justify-content:center}
+  .num{font-feature-settings:"tnum" 1}
+
+  /* device */
+  .device{width:402px;max-width:100%;background:#0c0d10;border-radius:48px;padding:13px;box-shadow:0 50px 100px -30px rgba(0,0,0,.6),inset 0 0 0 2px rgba(255,255,255,.05)}
+  .screen{position:relative;height:840px;border-radius:36px;overflow:hidden;background:var(--canvas)}
+  .scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+  .scroll::-webkit-scrollbar{width:0}
+
+  /* status bar */
+  .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:13px;font-weight:600;color:var(--ink);position:sticky;top:0;z-index:5;background:var(--canvas)}
+  .statusbar .r{display:flex;align-items:center;gap:6px}
+  .statusbar svg{width:16px;height:16px}
+
+  /* app bar */
+  .appbar{height:54px;display:flex;align-items:center;gap:8px;padding:0 12px;position:sticky;top:44px;z-index:5;
+    background:rgba(20,23,26,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--hairline-soft)}
+  .ibtn{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:var(--ink-2);cursor:pointer;background:transparent;border:none}
+  .ibtn:active{background:rgba(21,23,28,.06)}
+  .ibtn svg{width:20px;height:20px}
+  .appbar .title{font-size:17px;font-weight:700;letter-spacing:-.02em}
+  .appbar .sp{margin-left:auto}
+  .plan-pill{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;padding:6px 9px;border-radius:11px;flex:none}
+  .plan-pill svg{width:13px;height:13px;color:rgba(255,255,255,.62)}
+  .plan-pill .pp-lbl{font-size:7.5px;color:rgba(255,255,255,.55);font-weight:500;line-height:1;text-transform:uppercase;letter-spacing:.04em}
+  .plan-pill .pp-val{font-size:11.5px;font-weight:600;line-height:1.1}
+  .nbtn{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:var(--ink-2);cursor:pointer;position:relative;background:var(--surface);box-shadow:0 1px 2px rgba(21,23,28,.05);border:none}
+  .nbtn svg{width:18px;height:18px}
+  .nbadge{position:absolute;top:-4px;right:-4px;background:var(--neg);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:999px;border:2px solid var(--canvas)}
+  .av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1b8567);border:2px solid var(--surface);box-shadow:0 2px 6px -2px rgba(15,110,86,.5)}
+
+  /* content */
+  .content{padding:16px 16px 30px;display:flex;flex-direction:column;gap:20px}
+  .zone{display:flex;flex-direction:column}
+  .zone-head{display:flex;align-items:center;justify-content:space-between;padding:0 2px 11px}
+  .zone-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .zone-tools{display:flex;gap:2px}
+  .tool{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--ink-4)}
+  .tool svg{width:15px;height:15px;stroke-width:1.7}
+  .panel{background:var(--surface);border-radius:var(--r-panel);box-shadow:var(--sh);padding:16px 16px 14px}
+
+  /* KPI strip — horizontal scroll */
+  .stats{display:flex;overflow-x:auto;scroll-snap-type:x proximity;margin:-2px -16px 16px;padding:0 16px;scrollbar-width:none}
+  .stats::-webkit-scrollbar{display:none}
+  .stat{flex:0 0 auto;min-width:100px;padding:2px 14px 11px;position:relative;border-bottom:2px solid transparent;scroll-snap-align:start}
+  .stat:not(:last-child)::after{content:"";position:absolute;right:0;top:5px;bottom:13px;width:1px;background:var(--hairline)}
+  .stat .s-lbl{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);min-height:22px;line-height:1.2}
+  .stat .dot{width:6px;height:6px;border-radius:50%;flex:none}
+  .stat .s-val{font-size:30px;font-weight:600;letter-spacing:-.035em;line-height:1;color:#aeb4bc;margin-top:9px}
+  .stat.on{border-bottom-color:var(--accent)}.stat.on .s-val{color:var(--ink)}
+  .dot.pos{background:var(--pos)}.dot.live{background:var(--live)}.dot.neutral{background:var(--neutral)}.dot.warn{background:var(--warn)}.dot.neg{background:var(--neg)}
+
+  /* records (responsive table -> stacked rows, same columns/values) */
+  .rec{padding:13px 2px}
+  .rec+.rec{border-top:1px solid var(--hairline-soft)}
+  .rec-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .rec-id{font-weight:600;color:var(--ink);font-size:13.5px;letter-spacing:-.01em}
+  .rec-meta{display:flex;flex-wrap:wrap;gap:x;column-gap:16px;row-gap:5px;margin-top:9px}
+  .kv{font-size:11.5px;color:var(--ink-3)}
+  .kv b{color:var(--ink-2);font-weight:600}
+  .rec-act{margin-top:11px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:var(--r-pill)}
+  .pill .d{width:6px;height:6px;border-radius:50%}
+  .pill.pos{color:var(--pos);background:var(--pos-t)}.pill.pos .d{background:var(--pos)}
+  .pill.live{color:var(--live);background:var(--live-t)}.pill.live .d{background:var(--live)}
+  .pill.neutral{color:var(--neutral);background:var(--neutral-t)}.pill.neutral .d{background:var(--neutral)}
+  .pill.warn{color:var(--warn);background:var(--warn-t)}.pill.warn .d{background:var(--warn)}
+  .pill.neg{color:var(--neg);background:var(--neg-t)}.pill.neg .d{background:var(--neg)}
+  .batt{display:inline-flex;align-items:center;gap:5px;color:var(--neg);font-weight:600}.batt svg{width:16px;height:16px}
+  .link{color:var(--accent);font-weight:600}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:var(--r-ctrl);font-weight:600;font-size:12.5px;border:1px solid transparent;font-family:inherit;cursor:pointer}
+  .btn-ghost{padding:7px 11px;color:var(--accent);background:var(--pos-t)}
+  .btn-out{width:100%;padding:12px;color:var(--ink);background:var(--surface);border:1px solid var(--hairline);margin-top:14px}
+  .btn-out:active{background:var(--surface-2)}
+
+  /* alerts */
+  .seg{display:flex;background:#101312;border-radius:11px;padding:3px;margin-bottom:8px}
+  .seg button{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;border:none;background:transparent;font-family:inherit;font-weight:600;font-size:12.5px;color:var(--ink-3);padding:8px;border-radius:8px}
+  .seg button svg{width:14px;height:14px}
+  .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(21,23,28,.10)}.seg button.on .star{color:var(--warn)}
+  .alert-row{display:flex;gap:12px;padding:14px 0}
+  .alert-row+.alert-row{border-top:1px solid var(--hairline-soft)}
+  .alert-row .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}.alert-row .ic svg{width:16px;height:16px}
+  .ic.light{background:var(--warn-t);color:var(--warn)}.ic.temp{background:var(--neg-t);color:var(--neg)}
+  .alert-row .ttl{font-weight:600;font-size:13px}.alert-row .ttl .id{color:var(--ink-3);font-weight:500;margin-left:5px}
+  .alert-row .desc{font-size:12px;color:var(--ink-2);margin-top:3px}.alert-row .desc b{color:var(--ink);font-weight:600}
+  .alert-row .ts{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink-4);margin-top:6px}.alert-row .ts svg{width:11px;height:11px}
+
+  /* map */
+  .map{position:relative;height:230px;border-radius:13px;overflow:hidden;background:radial-gradient(130% 100% at 28% 18%,#22262f,#181b21 55%,#121317)}
+  .road{position:absolute;background:rgba(127,217,189,.09);border-radius:99px}
+  .water{position:absolute;border-radius:42% 58% 55% 45%;background:rgba(40,80,75,.26);filter:blur(1px)}
+  .pin{position:absolute;transform:translate(-50%,-100%)}.pin svg{width:38px;height:38px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+  .stn{position:absolute;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);display:grid;place-items:center;color:#cdd6d2;transform:translate(-50%,-50%)}.stn svg{width:10px;height:10px}
+  .full{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.10);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#dfe7e4}.full svg{width:15px;height:15px}
+  .attr{position:absolute;bottom:8px;left:11px;font-size:9px;color:rgba(255,255,255,.32)}
+
+  /* drawer */
+  .overlay{position:absolute;inset:0;background:rgba(8,9,12,.5);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
+  .overlay.open{opacity:1;pointer-events:auto}
+  .drawer{position:absolute;top:0;left:0;bottom:0;width:280px;background:linear-gradient(180deg,var(--rail),var(--rail-2));color:var(--rail-txt);
+    transform:translateX(-100%);transition:transform .28s cubic-bezier(.3,.8,.3,1);z-index:21;display:flex;flex-direction:column}
+  .drawer.open{transform:none}
+  .d-brand{display:flex;align-items:center;gap:11px;padding:20px 20px 16px}
+  .d-brand .mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#dfe4e0;background:linear-gradient(150deg,#23262e,#15171c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+  .d-brand .mark svg{width:19px;height:19px}
+  .d-brand .name{font-weight:700;font-size:16px;color:#fff;letter-spacing:-.02em;line-height:1}.d-brand .name span{color:var(--mint)}
+  .d-brand .tag{font-size:7.5px;letter-spacing:.18em;color:var(--rail-muted);font-weight:600;margin-top:3px}
+  .d-plan{margin:0 20px 12px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid var(--rail-line);padding:10px 12px;border-radius:11px}
+  .d-plan svg{width:15px;height:15px;color:rgba(255,255,255,.6)}
+  .d-plan .pl-lbl{font-size:9px;color:var(--rail-muted);font-weight:500;line-height:1.1}
+  .d-plan .pl-val{font-size:12.5px;color:#fff;font-weight:600}
+  .d-nav{padding:4px 12px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;flex:1}
+  .d-nav a{display:flex;align-items:center;gap:13px;padding:11px 12px;border-radius:10px;color:var(--rail-txt);text-decoration:none;font-weight:500;font-size:14px;position:relative}
+  .d-nav a svg{width:18px;height:18px;opacity:.85}
+  .d-nav a:active{background:rgba(255,255,255,.045)}
+  .d-nav a.active{background:rgba(127,217,189,.10);color:var(--mint);font-weight:600}
+  .d-nav a.active svg{opacity:1}
+  .d-nav a.active::before{content:"";position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:var(--mint)}
+  .d-nav a .chev{margin-left:auto;width:15px;height:15px;opacity:.5}
+  .d-foot{padding:12px 16px 18px}
+  .d-help{display:flex;align-items:center;gap:11px;width:100%;border:1px solid var(--rail-line);background:rgba(255,255,255,.02);padding:12px 13px;border-radius:11px;color:var(--rail-txt);font-weight:600;font-size:13.5px}
+  .d-help svg{width:17px;height:17px}.d-help .chev{margin-left:auto;opacity:.5;width:15px;height:15px}
+  .d-close{position:absolute;top:18px;right:-46px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;color:#fff;border:none;cursor:pointer}
+  .drawer:not(.open) .d-close{display:none}
+  .d-close svg{width:18px;height:18px}
+
+  .hint{margin-top:22px;text-align:center;color:rgba(255,255,255,.55);font-size:11.5px;line-height:1.6;max-width:402px}
+
+
+  /* Novira dark theme override — colors only, structure unchanged */
+  :root{
+    --ink:#F4F1E8; --ink-2:#A8A89E; --ink-3:#767872; --ink-4:#5F625E;
+    --canvas:#0D0F0E; --surface:#14171A; --surface-2:#191D21;
+    --hairline:rgba(244,241,232,.10); --hairline-soft:rgba(244,241,232,.06);
+    --accent:#4FAE84; --accent-2:#6FC69E; --mint:#7FD9BD;
+    --rail:#121317; --rail-2:#181A20; --rail-line:rgba(255,255,255,.08); --rail-txt:#9AA1AB; --rail-txt-hi:#E9ECE9; --rail-muted:rgba(255,255,255,.38);
+    --pos:#4FAE84; --live:#39B3A6; --neutral:#8A8E86; --warn:#D98A4A; --neg:#D96A5F;
+    --pos-t:rgba(79,174,132,.14); --live-t:rgba(57,179,166,.14); --neutral-t:rgba(138,142,134,.14); --warn-t:rgba(217,138,74,.15); --neg-t:rgba(217,106,95,.14);
+    --sh:0 1px 2px rgba(0,0,0,.35), 0 18px 44px -28px rgba(0,0,0,.75);
+  }
+  .screen{background:var(--canvas)!important;color:var(--ink)!important}
+  .scroll{background:var(--canvas)!important}
+  .statusbar{background:var(--canvas)!important;color:var(--ink)!important}
+  .appbar{background:rgba(20,23,26,.88)!important;border-bottom-color:var(--hairline)!important;color:var(--ink)!important}
+  .m-head{background:var(--surface)!important;border-bottom-color:var(--hairline-soft)!important;color:var(--ink)!important}
+  .panel,.card,.wcard,.band,.subnav,.rec.plain,.tcard,.vcard,.ncard,.pcard{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--hairline)!important}
+  .content,.zone,.zone-head,.c-title,.zone-title,.group-title,.sec-title,.hero h1,.hero,.support h3,.wtitle,.rec-id,.rec-ship,.ent,.ent .val,.ttl,.d-title,.h-id,.appbar .title{color:var(--ink)!important}
+  .hero p,.support p,.kv,.kv b,.kv-val.body,.rec-title,.rec-meta,.total-list,.caption,.desc,.arec-msg,.feed-row .desc,.alert-row .desc,.sc-sub,.bh-meta,.f-out,.v-d,.p-d,.n-d,.bare,.stage .lbl,.stage .ts{color:var(--ink-2)!important}
+  .h-ey,.kv-label,.when,.card-top .when,.card-top .sno,.rec-no,.fmeta,.d-sub,.d-v,.feed-row .ts,.alert-row .ts,.arec-when,.tfoot .meta{color:var(--ink-3)!important}
+  .select,.sel,.search input,.wsearch input,.datefield .inp,.field .inp,.input,.textarea,.attach,.ent,.schip,.chip,.wchip,.btn-out,.toolbtn,.plus,.iconbtn,.x,.nbtn,.rsel{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--hairline)!important}
+  .select svg,.sel svg,.search svg,.wsearch svg,.datefield svg,.field svg,.toolbtn svg,.plus svg,.iconbtn svg,.x svg,.nbtn svg,.ibtn svg{color:var(--ink-3)!important}
+  .search input::placeholder,.wsearch input::placeholder,.input::placeholder,.textarea::placeholder{color:var(--ink-4)!important}
+  .plan-pill{background:rgba(244,241,232,.08)!important;color:var(--ink)!important;border:1px solid var(--hairline)!important}
+  .plan-pill .pp-lbl{color:var(--ink-3)!important}.plan-pill svg{color:var(--ink-3)!important}
+  .av{border-color:var(--surface)!important}
+  .stats .stat:not(:last-child)::after,.rec+.rec,.card+.card,.feed-row+.feed-row,.alert-row+.alert-row,.tlcard+.tlcard,.pager,.tfoot,.maphead,.group-title{border-color:var(--hairline-soft)!important}
+  .stat:not(:last-child)::after{background:var(--hairline)!important}
+  .stat .s-val{color:#69706D!important}.stat.on .s-val{color:var(--ink)!important}
+  .seg{background:#101312!important;border:1px solid var(--hairline)!important}.seg button.on{background:var(--surface-2)!important;color:var(--ink)!important}
+  .btn-secondary,.btn-fill,.btn-out.btn-dark{background:#24282E!important;color:var(--ink)!important;border-color:var(--hairline)!important}
+  .btn-primary,.create,.viewall,.pg.on,.wchip.on,.chip.on,.schip.on{background:var(--accent)!important;color:#FFFFFF!important;border-color:transparent!important}
+  .btn-ghost,.link,.rec-id,.rec-inv,.f-go,.p-go{color:var(--accent)!important}
+  .band-head{background:linear-gradient(135deg,rgba(79,174,132,.14),var(--surface-2))!important}
+  .rec.active{background:rgba(79,174,132,.12)!important;border-color:rgba(79,174,132,.35)!important;box-shadow:inset 3px 0 0 var(--accent)!important}
+  .attach .fic,.ent .ic,.h-mark,.vcard .v-ic,.tcard .t-ic,.p-render{background:var(--pos-t)!important;color:var(--accent)!important}
+  .bar{background:#101312!important;border-color:var(--hairline)!important}
+  .cbx{border-color:var(--hairline)!important}
+  .dcard{background:linear-gradient(160deg,#1D2026,#141619)!important;border-color:var(--rail-line)!important;color:#fff!important}
+  .map{background:radial-gradient(130% 100% at 28% 18%,#22262F,#181B21 55%,#121317)!important}
+  .pg{color:var(--ink-2)!important}.pg.txt{color:var(--accent)!important}.pg.arr{color:var(--ink-4)!important}
+  footer,.m-foot{background:var(--surface)!important;border-color:var(--hairline)!important;color:var(--ink-2)!important}
+
+</style>
+</head>
+<body>
+<!-- Converted to Novira dark theme: colors only; layout/content unchanged. -->
+
+  <div>
+    <div class="device">
+      <div class="screen">
+        <div class="scroll" id="scroll">
+
+          <div class="statusbar">
+            <span>9:41</span>
+            <span class="r">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 14h3v6H3zM9 10h3v10H9zM15 6h3v14h-3z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8.5a14 14 0 0120 0M5 12a9 9 0 0114 0M8.5 15.5a4.5 4.5 0 017 0"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="18" height="10" rx="2.5"/><rect x="21" y="10" width="1.6" height="4" rx=".8"/></svg>
+            </span>
+          </div>
+
+          <div class="appbar">
+            <button class="ibtn" onclick="document.getElementById('dr').classList.add('open');document.getElementById('ov').classList.add('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+            <span class="title">Dashboard</span>
+            <span class="sp"></span>
+            <span class="plan-pill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7l4 3 5-6 5 6 4-3-2 12H5L3 7z"/></svg><span><span class="pp-lbl">Plan</span><span class="pp-val" style="display:block">Ai Navigator</span></span></span>
+            <button class="nbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg><span class="nbadge">99+</span></button>
+            <button class="nbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+            <span class="av"></span>
+          </div>
+
+          <div class="content">
+
+            <!-- TRACKERS -->
+            <section class="zone">
+              <div class="zone-head"><div class="zone-title">Trackers</div>
+                <div class="zone-tools">
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="stats">
+                  <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All Trackers</div><div class="s-val num">9</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Pending Setup</div><div class="s-val num">2</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot live"></span>Live · Unlinked</div><div class="s-val num">7</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Live · Linked</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Offline</div><div class="s-val num">2</div></div>
+                </div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">TRAC#929977</span><a class="btn btn-ghost" href="novira-tracker-details-mobile.html">View Details</a></div><div class="rec-meta"><span class="kv">Type <b>NovaEdge</b></span><span class="kv">Status <b>—</b></span><span class="kv">Battery <b>—</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">TRAC#310760</span><a class="btn btn-ghost" href="novira-tracker-details-mobile.html">View Details</a></div><div class="rec-meta"><span class="kv">Type <b>NovaEdge</b></span><span class="kv">Status <b>—</b></span><span class="kv">Battery <b>—</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">TRAC#768010</span><a class="btn btn-ghost" href="novira-tracker-details-mobile.html">View Details</a></div><div class="rec-meta"><span class="kv">Type <b>NovaLite</b></span><span class="kv">Status <b>—</b></span><span class="kv">Battery <b>—</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">TRAC#880002</span><a class="btn btn-ghost" href="novira-tracker-details-mobile.html">View Details</a></div><div class="rec-meta"><span class="kv">Type <b>NovaEdge</b></span><span class="kv">Status <b>—</b></span><span class="kv">Battery <b>—</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">TRAC#728595</span><a class="btn btn-ghost" href="novira-tracker-details-mobile.html">View Details</a></div><div class="rec-meta"><span class="kv">Type <b>NovaLite</b></span><span class="kv">Status <b>—</b></span><span class="kv">Battery <b>—</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">TRAC#591616</span><a class="btn btn-ghost" href="novira-tracker-details-mobile.html">View Details</a></div><div class="rec-meta"><span class="kv">Type <b>NovaFive</b></span><span class="kv">Status <span class="pill neg"><span class="d"></span>Offline</span></span><span class="kv">Battery <span class="batt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="8" width="16" height="8" rx="2"/><path d="M20 11v2"/></svg>0%</span></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">TRAC#865656</span><a class="btn btn-ghost" href="novira-tracker-details-mobile.html">View Details</a></div><div class="rec-meta"><span class="kv">Type <b>NovaFive</b></span><span class="kv">Status <span class="pill neg"><span class="d"></span>Offline</span></span><span class="kv">Battery <span class="batt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="8" width="16" height="8" rx="2"/><path d="M20 11v2"/></svg>0%</span></span></div></div>
+                <button class="btn btn-out" onclick="window.location.href='novira-trackers-mobile.html'">View Tracker Page</button>
+              </div>
+            </section>
+
+            <!-- SHIPMENTS -->
+            <section class="zone">
+              <div class="zone-head"><div class="zone-title">Shipments</div>
+                <div class="zone-tools">
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="stats">
+                  <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All</div><div class="s-val num">13</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot live"></span>Upcoming</div><div class="s-val num">1</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>In Transit</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Delayed</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Completed</div><div class="s-val num">11</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Canceled</div><div class="s-val num">1</div></div>
+                </div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#384580</span><span class="pill pos"><span class="d"></span>Completed</span></div><div class="rec-meta"><span class="kv">Origin <b>3325 San Pablo Ct, Union City, CA</b></span><span class="kv">Destination <b>300 G… Fremont</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#439419</span><span class="pill pos"><span class="d"></span>Completed</span></div><div class="rec-meta"><span class="kv">Origin <b>3325 San Pablo Ct, Union City, CA</b></span><span class="kv">Destination <b>300 G… Fremont</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#559138</span><span class="pill pos"><span class="d"></span>Completed</span></div><div class="rec-meta"><span class="kv">Origin <b>3325 San Pablo Ct, Union City, CA</b></span><span class="kv">Destination <b>300 G… Fremont</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#603538</span><span class="pill pos"><span class="d"></span>Completed</span></div><div class="rec-meta"><span class="kv">Origin <b>3325 San Pablo Court, Union City, CA</b></span><span class="kv">Destination <b>Tracy, CA</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#507327</span><span class="pill live"><span class="d"></span>Upcoming</span></div><div class="rec-meta"><span class="kv">Origin <b>22290 Hathaway Avenue, Hayward, CA</b></span><span class="kv">Destination <b>666 Be… Oakland</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#3686</span><span class="pill pos"><span class="d"></span>Completed</span></div><div class="rec-meta"><span class="kv">Origin <b>4545 Macbeth Avenue, Fremont, CA</b></span><span class="kv">Destination <b>666 V… CA, USA</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#5456</span><span class="pill pos"><span class="d"></span>Completed</span></div><div class="rec-meta"><span class="kv">Origin <b>5555 Cedar Court Hotel, Newark, CA…</b></span><span class="kv">Destination <b>4546 P… Fremont</b></span></div></div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">SHIP#5148</span><span class="pill pos"><span class="d"></span>Completed</span></div><div class="rec-meta"><span class="kv">Origin <b>4545 Chabot Drive, Pleasanton, CA</b></span><span class="kv">Destination <b>545 Sa… Mountain View</b></span></div></div>
+                <button class="btn btn-out" onclick="window.location.href='novira-shipments-mobile.html'">View Shipment Page</button>
+              </div>
+            </section>
+
+            <!-- FLEETS -->
+            <section class="zone">
+              <div class="zone-head"><div class="zone-title">Fleets</div>
+                <div class="zone-tools">
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="stats">
+                  <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All</div><div class="s-val num">1</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Linked</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>Not Linked</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot live"></span>Moving</div><div class="s-val num">1</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Idle</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Stopped</div><div class="s-val num">0</div></div>
+                </div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">FLEET#9230</span><span class="pill live"><span class="d"></span>Moving</span></div><div class="rec-meta"><span class="kv">Type <b>truck</b></span><span class="kv">License Plate <b>FAUJ</b></span><span class="kv">Total Shipments <b><span class="link">3</span></b></span></div></div>
+                <button class="btn btn-out" onclick="window.location.href='novira-fleets-mobile.html'">View Fleet Page</button>
+              </div>
+            </section>
+
+            <!-- DRIVERS -->
+            <section class="zone">
+              <div class="zone-head"><div class="zone-title">Drivers</div>
+                <div class="zone-tools">
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+                  <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="stats">
+                  <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>Total Drivers</div><div class="s-val num">1</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Active / On</div><div class="s-val num">1</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>Inactive / Off</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Flagged</div><div class="s-val num">0</div></div>
+                  <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Pending Doc.</div><div class="s-val num">0</div></div>
+                </div>
+                <div class="rec"><div class="rec-top"><span class="rec-id">DRIVER#4960</span><span class="pill pos"><span class="d"></span>Active / On</span></div><div class="rec-meta"><span class="kv">Total Shipment <b><span class="link">3</span></b></span><span class="kv">Last Update <b>Mar 18 2026 · 10:14 PM</b></span></div></div>
+                <button class="btn btn-out" onclick="window.location.href='novira-drivers-mobile.html'">View Driver Page</button>
+              </div>
+            </section>
+
+            <!-- ALERTS OVERVIEW -->
+            <section class="zone">
+              <div class="zone-head"><div class="zone-title">Alerts Overview</div></div>
+              <div class="panel">
+                <div class="seg">
+                  <button class="on"><svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7z"/></svg>Active</button>
+                  <button><svg viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="var(--warn)"/></svg>Priority</button>
+                </div>
+                <div class="alert-row"><span class="ic light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.4 1.4M16.6 16.6L18 18M6 18l1.4-1.4M16.6 7.4L18 6"/></svg></span>
+                  <div><div class="ttl">Low Light Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment dropped below 10 Lux. Current: <b>1 Lux</b>.</div><div class="ts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Jun 01 2026, 09:39:02 AM</div></div></div>
+                <div class="alert-row"><span class="ic light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.4 1.4M16.6 16.6L18 18M6 18l1.4-1.4M16.6 7.4L18 6"/></svg></span>
+                  <div><div class="ttl">Low Light Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment dropped below 10 Lux. Current: <b>0.5 Lux</b>.</div><div class="ts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Jun 01 2026, 06:44:01 AM</div></div></div>
+                <div class="alert-row"><span class="ic temp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13V5a2 2 0 014 0v8a4 4 0 11-4 0z"/></svg></span>
+                  <div><div class="ttl">High Temperature Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment exceeded 90°F. Current: <b>90.068°F</b>.</div><div class="ts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>May 31 2026, 07:49:55 PM</div></div></div>
+                <div class="alert-row"><span class="ic temp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13V5a2 2 0 014 0v8a4 4 0 11-4 0z"/></svg></span>
+                  <div><div class="ttl">High Temperature Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment exceeded 90°F.</div></div></div>
+              </div>
+            </section>
+
+            <!-- TRACKERS MAP -->
+            <section class="zone">
+              <div class="zone-head"><div class="zone-title">Trackers Map</div>
+                <div class="zone-tools"><span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span></div>
+              </div>
+              <div class="panel">
+                <div class="map">
+                  <div class="road" style="top:30%;left:-10%;width:75%;height:14px;transform:rotate(-18deg)"></div>
+                  <div class="road" style="top:55%;left:10%;width:100%;height:12px;transform:rotate(10deg)"></div>
+                  <div class="road" style="top:5%;left:60%;width:9px;height:90%;transform:rotate(6deg)"></div>
+                  <div class="road" style="top:20%;left:22%;width:8px;height:70%;transform:rotate(14deg)"></div>
+                  <div class="water" style="top:6%;left:6%;width:130px;height:95px"></div>
+                  <div class="pin" style="top:46%;left:34%"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z" fill="#0f6e56" stroke="#7fd9bd" stroke-width="1.3"/><path d="M12 6.5l3 1.6v1.9c0 1.9-1.3 3-3 3.4-1.7-.4-3-1.5-3-3.4V8.1z" fill="#7fd9bd"/></svg></div>
+                  <div class="stn" style="top:42%;left:74%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="12" height="13" rx="2"/><path d="M8 21l2-3M16 21l-2-3"/></svg></div>
+                  <div class="stn" style="top:62%;left:84%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="12" height="13" rx="2"/><path d="M8 21l2-3M16 21l-2-3"/></svg></div>
+                  <div class="full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+                  <div class="attr">Map data ©2026 Google</div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+
+        <!-- DRAWER -->
+        <div class="overlay" id="ov" onclick="document.getElementById('dr').classList.remove('open');this.classList.remove('open')"></div>
+        <aside class="drawer" id="dr">
+          <button class="d-close" onclick="document.getElementById('dr').classList.remove('open');document.getElementById('ov').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <div class="d-brand">
+            <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg></div>
+            <div><div class="name">NOVIRA<span>.ai</span></div><div class="tag">TRUST WHAT YOU TRACK</div></div>
+          </div>
+          <nav class="d-nav">
+            <a class="active" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+            <a href="novira-trackers-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Trackers</a>
+            <a href="novira-shipments-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7h11v8H3z"/><path d="M14 10h4l3 3v2h-7z"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/></svg>Shipments</a>
+            <a href="novira-fleets-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 8h13v9H2z"/><path d="M15 11h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>Fleets</a>
+            <a href="novira-drivers-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>Drivers</a>
+            <a href="novira-alerts-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg>Alerts</a>
+            <a href="novira-notifications-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg>Notifications</a>
+            <a href="novira-widgets-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6c2-2 6-2 8 0 2-2 6-2 8 0v12c-2-2-6-2-8 0-2-2-6-2-8 0V6z"/></svg>Widgets</a>
+            <a href="novira-subscriptions-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 5h18v4H3z"/><path d="M5 9v10h14V9"/><path d="M9 13h6"/></svg>Subscriptions</a>
+            <a href="novira-reports-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+            <a href="novira-support-tickets-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Support<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg></a>
+          </nav>
+          <div class="d-foot"><a class="d-help" href="novira-support-tickets-mobile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>Help &amp; Support<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg></a></div>
+        </aside>
+
+      </div>
+    </div>
+    <div class="hint">Tap the ☰ menu to open the navigation drawer · KPI strips scroll horizontally · same modules, order &amp; data as desktop</div>
+  </div>
+
+</body>
+</html>
